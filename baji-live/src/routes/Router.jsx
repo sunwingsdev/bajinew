@@ -73,6 +73,8 @@ import DepositHistory from "@/pages/dashboard/BankingDeposit/DepositHistory";
 import WithdrawHistory from "@/pages/dashboard/BankingWithdraw/WithdrawHistory";
 import CommissionSetting from "@/pages/dashboard/Setting/CommissionSetting/CommissionSetting";
 import UserDetailsPage from "@/pages/dashboard/UserDetailsPage/UserDetailsPage ";
+import AdminProfile from "@/pages/dashboard/AdminProfile/AdminProfile";
+import EditDepositMethodForm from "@/components/dashboard/bankingDeposit/depositMethod/EditDepositMethodForm";
 
 const router = createBrowserRouter([
   {
@@ -137,6 +139,7 @@ const router = createBrowserRouter([
         path: "users",
         element: <AllUsers />,
       },
+      { path: "profile/:id", element: <AdminProfile /> },
       { path: "cashagent", element: <CashAgent /> },
       { path: "kyc", element: <Kyc /> },
       { path: "paymentmethodrequests", element: <PaymentMethodRequests /> },
@@ -197,6 +200,7 @@ const router = createBrowserRouter([
         element: <HomeControl />,
       },
       { path: "depositmethod", element: <DepositMethod /> },
+      { path: "edit-depositmethod/:id", element: <EditDepositMethodForm /> },
       { path: "deposithistory", element: <DepositHistory /> },
       { path: "withdraws", element: <WithdrawHistory /> },
       { path: "commissionsetting", element: <CommissionSetting /> },

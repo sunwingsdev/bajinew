@@ -1,8 +1,10 @@
 import PrimaryButton from "@/components/shared/Buttons/PrimaryButton";
 import { useAddDepositMutation } from "@/redux/features/allApis/depositsApi/depositsApi";
 import { useGetPaymentMethodsQuery } from "@/redux/features/allApis/paymentMethodApi/paymentMethodApi";
+import { useGetAllPaymentNumbersQuery } from "@/redux/features/allApis/paymentNumberApi/paymentNumberApi";
 import { useEffect, useState } from "react";
 import { FcOk } from "react-icons/fc";
+import { FiCopy } from "react-icons/fi";
 import { RxCrossCircled } from "react-icons/rx";
 import { useSelector } from "react-redux";
 import { useToasts } from "react-toast-notifications";
@@ -10,6 +12,8 @@ import { useToasts } from "react-toast-notifications";
 const DepositTab = () => {
   const { user } = useSelector((state) => state.auth);
   const [addDeposit] = useAddDepositMutation();
+  const { data: allPaymentNumbers } = useGetAllPaymentNumbersQuery();
+  console.log(allPaymentNumbers);
   const [formData, setFormData] = useState({
     paymentMethod: null,
     depositChannel: null,
@@ -17,10 +21,11 @@ const DepositTab = () => {
     senderNumber: "",
     transactionId: "",
   });
+  const [selectedNumber, setSelectedNumber] = useState(null);
+  console.log(selectedNumber);
   const { addToast } = useToasts();
 
   const { data: gateways } = useGetPaymentMethodsQuery();
-  console.log(gateways);
 
   useEffect(() => {
     if (gateways && gateways?.length > 0) {
@@ -33,18 +38,31 @@ const DepositTab = () => {
     }
   }, [gateways]);
 
+  useEffect(() => {
+    if (formData.paymentMethod && formData.depositChannel) {
+      const filteredNumbers = allPaymentNumbers?.filter(
+        (item) =>
+          item.channel?.toLowerCase() ===
+            formData.depositChannel.toLowerCase() &&
+          item.paymentNumberMethod?.toLowerCase() ===
+            formData.paymentMethod.toLowerCase()
+      );
+
+      if (filteredNumbers?.length > 0) {
+        const randomIndex = Math.floor(Math.random() * filteredNumbers.length);
+        setSelectedNumber(filteredNumbers[randomIndex]);
+      } else {
+        setSelectedNumber(null);
+      }
+    } else {
+      setSelectedNumber(null);
+    }
+  }, [formData.paymentMethod, formData.depositChannel, allPaymentNumbers]);
+
   const handleSelect = (key, value) => {
     setFormData((prev) => ({
       ...prev,
       [key]: value,
-    }));
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
     }));
   };
 
@@ -107,6 +125,14 @@ const DepositTab = () => {
       // Add more channels and numbers as needed
     };
     return channelPhoneNumbers[channel] || "+88015111111111"; // Default number if no match
+  };
+
+  const handleCopy = (text) => {
+    navigator.clipboard.writeText(text);
+    addToast("নাম্বার কপি হয়েছে", {
+      appearance: "info",
+      autoDismiss: true,
+    });
   };
 
   return (
@@ -176,14 +202,33 @@ const DepositTab = () => {
       {/* Phone Number based on Deposit Channel */}
       <p className="text-sm">নাম্বার</p>
       {formData.depositChannel ? (
-        <div className="px-3 py-2 inline-flex items-center gap-2 bg-gradient-to-br from-[#f269b0] to-[#5d1b90] rounded-lg">
-          {/* Dynamic Phone Number based on Channel */}
-          <p>{getPhoneNumberByChannel(formData.depositChannel)}</p>
-        </div>
+        selectedNumber && selectedNumber.status?.toLowerCase() === "approve" ? (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-3 px-3 py-2 bg-gradient-to-br from-[#f269b0] to-[#5d1b90] rounded-lg">
+              <div className="flex flex-col text-sm">
+                <span className="font-medium text-xl">
+                  {selectedNumber?.paymentNumber}
+                </span>
+                <span className="text-base text-yellow-200 italic">
+                  {selectedNumber?.numberCategory}
+                </span>
+              </div>
+              <button
+                onClick={() => handleCopy(selectedNumber?.paymentNumber)}
+                className="hover:text-yellow-300"
+              >
+                <FiCopy title="Copy the Number" />
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="px-3 py-2 inline-flex items-center gap-2 bg-gradient-to-br from-[#f269b0] to-[#5d1b90] rounded-lg">
+            <p>কোন নাম্বার পাওয়া যায়নি</p>
+          </div>
+        )
       ) : (
         <div className="px-3 py-2 inline-flex items-center gap-2 bg-gradient-to-br from-[#f269b0] to-[#5d1b90] rounded-lg">
-          <p>অনুগ্রহ করে ডিপোজিট চ্যানেল নির্বাচন করুন</p>{" "}
-          {/* The new message */}
+          <p>অনুগ্রহ করে ডিপোজিট চ্যানেল নির্বাচন করুন</p>
         </div>
       )}
 

@@ -75,6 +75,7 @@ import CommissionSetting from "@/pages/dashboard/Setting/CommissionSetting/Commi
 import UserDetailsPage from "@/pages/dashboard/UserDetailsPage/UserDetailsPage ";
 import AdminProfile from "@/pages/dashboard/AdminProfile/AdminProfile";
 import EditDepositMethodForm from "@/components/dashboard/bankingDeposit/depositMethod/EditDepositMethodForm";
+import PromotionOffer from "@/pages/dashboard/PromotionOffer/PromotionOffer";
 
 const router = createBrowserRouter([
   {
@@ -204,6 +205,7 @@ const router = createBrowserRouter([
       { path: "deposithistory", element: <DepositHistory /> },
       { path: "withdraws", element: <WithdrawHistory /> },
       { path: "commissionsetting", element: <CommissionSetting /> },
+      { path: "promotion-offer", element: <PromotionOffer /> },
     ],
   },
   {

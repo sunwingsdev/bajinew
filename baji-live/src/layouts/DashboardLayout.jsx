@@ -109,7 +109,7 @@ const DashboardLayout = () => {
       icon: <BsFront />,
       submenu: [
         { label: "Home control", to: "/dashboard/home-controls" },
-        { label: "Promotions" },
+        { label: "Promotions", to: "/dashboard/promotion-offer" },
         { label: "Pages" },
         { label: "Notice", to: "/dashboard/notice" },
         { label: "About Us" },

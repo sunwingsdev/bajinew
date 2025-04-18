@@ -1,4 +1,5 @@
 import { useGetKycByIdQuery } from "@/redux/features/allApis/kycApi/kycApi";
+import { useGetPaymentMethodsQuery } from "@/redux/features/allApis/paymentMethodApi/paymentMethodApi";
 import { useAddPaymentNumberMutation } from "@/redux/features/allApis/paymentNumberApi/paymentNumberApi";
 import { useForm } from "react-hook-form";
 import { useToasts } from "react-toast-notifications";
@@ -14,6 +15,7 @@ const AddPaymentMethodandNumberforAgent = ({ id }) => {
 
   const { addToast } = useToasts();
   const [addPaymentNumber, { isLoading }] = useAddPaymentNumberMutation();
+  const { data: gateways } = useGetPaymentMethodsQuery();
   const { data: singleKyc } = useGetKycByIdQuery(id);
 
   const selectedMethod = watch("paymentNumberMethod");
@@ -21,6 +23,7 @@ const AddPaymentMethodandNumberforAgent = ({ id }) => {
   const onSubmit = async (data) => {
     const formattedData = {
       userId: id,
+      channel: "cpay",
       ...data,
     };
     try {
@@ -70,9 +73,11 @@ const AddPaymentMethodandNumberforAgent = ({ id }) => {
             <option value="" className="text-gray-500">
               Choose a payment method
             </option>
-            <option value="bkash">Bkash</option>
-            <option value="rocket">Rocket</option>
-            <option value="nagad">Nagad</option>
+            {gateways?.map((gateway, i) => (
+              <option key={i} value={gateway?.method} className="capitalize">
+                {gateway?.method}
+              </option>
+            ))}
           </select>
 
           {/* Conditional Input Field */}

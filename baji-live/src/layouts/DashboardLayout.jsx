@@ -171,7 +171,12 @@ const DashboardLayout = () => {
           !open ? "md:pl-20" : "md:pl-64"
         }`}
       >
-        <DashboardMobilMenu open={open} menuItems={menuItems} />
+        <DashboardMobilMenu
+          open={open}
+          menuItems={menuItems}
+          dashboardLink="/dashboard"
+          logOutPath="/admin"
+        />
         <div className="mt-[62px] md:mt-14 p-3">
           <Outlet />
         </div>

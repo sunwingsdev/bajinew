@@ -268,6 +268,56 @@ const usersApi = (usersCollection, homeControlsCollection) => {
     }
   });
 
+  // Update an agent by ID
+  router.put("/update-user/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      const updateData = req.body;
+
+      // Validate agent ID
+      if (!id || !ObjectId.isValid(id)) {
+        return res.status(400).json({ message: "Invalid User ID" });
+      }
+
+      // Validate update data
+      if (!updateData || Object.keys(updateData).length === 0) {
+        return res.status(400).send({ message: "No data provided to update" });
+      }
+
+      // Handle password updates
+      if (updateData.password) {
+        if (updateData.password.length < 6) {
+          return res
+            .status(400)
+            .send({ message: "Password must be at least 6 characters long" });
+        }
+        updateData.password = await bcrypt.hash(updateData.password, 10); // Hash password
+      }
+
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = { $set: updateData };
+
+      const result = await usersCollection.updateOne(filter, updateDoc);
+
+      // Check the result of the update operation
+      if (result.matchedCount === 0) {
+        return res.status(404).send({ message: "User not found" });
+      }
+
+      if (result.modifiedCount === 0) {
+        return res.status(200).send({ message: "No changes were made" });
+      }
+
+      res.status(200).send({ message: "User updated successfully" });
+    } catch (error) {
+      console.error("Error updating user:", error);
+      res
+        .status(500)
+        .send({ message: "Server error. Please try again later." });
+    }
+  });
+
   // Update user image by ID
   router.put("/update-user-image/:id", async (req, res) => {
     try {

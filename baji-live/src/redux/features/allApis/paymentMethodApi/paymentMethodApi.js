@@ -10,10 +10,17 @@ const paymentMethodApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["paymentMethod"],
     }),
+
     getPaymentMethods: builder.query({
       query: () => "/paymentmethod",
       providesTags: ["paymentMethod"],
     }),
+
+    getPaymentMethodById: builder.query({
+      query: (id) => `/paymentmethod/${id}`,
+      providesTags: ["paymentMethod"],
+    }),
+
     updatePaymentMethod: builder.mutation({
       query: ({ id, data }) => ({
         url: `/paymentmethod/${id}`,
@@ -22,6 +29,7 @@ const paymentMethodApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["paymentMethod"],
     }),
+
     deletePaymentMethod: builder.mutation({
       query: (id) => ({
         url: `/paymentmethod/${id}`,
@@ -35,6 +43,7 @@ const paymentMethodApi = baseApi.injectEndpoints({
 export const {
   useAddPaymentMethodMutation,
   useGetPaymentMethodsQuery,
+  useGetPaymentMethodByIdQuery,
   useUpdatePaymentMethodMutation,
   useDeletePaymentMethodMutation,
 } = paymentMethodApi;

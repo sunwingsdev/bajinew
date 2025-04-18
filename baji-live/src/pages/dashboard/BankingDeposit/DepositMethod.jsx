@@ -15,6 +15,7 @@ import {
 import { deleteImage } from "@/hooks/files";
 import AddDepositMethodForm from "@/components/dashboard/bankingDeposit/depositMethod/AddDepositMethodForm";
 import DeleteModal from "@/components/shared/Modals/DeleteModal";
+import { Link } from "react-router-dom";
 
 const DepositMethod = () => {
   const { data: gateways } = useGetPaymentMethodsQuery();
@@ -121,7 +122,7 @@ const DepositMethod = () => {
               <tbody>
                 {filteredGateways?.map((gateway) => (
                   <tr
-                    key={gateway._id}
+                    key={gateway?._id}
                     className="border-b border-x border-slate-500"
                   >
                     <td className="py-1 px-4">
@@ -132,7 +133,7 @@ const DepositMethod = () => {
                         }`}
                         alt=""
                       />
-                      <span className="ps-2">{gateway.method}</span>
+                      <span className="ps-2">{gateway?.method}</span>
                     </td>
                     <td className="py-1 px-4">
                       <div
@@ -153,7 +154,7 @@ const DepositMethod = () => {
                               : "text-red-700"
                           } text-sm capitalize`}
                         >
-                          {gateway.status || ""}
+                          {gateway?.status || ""}
                         </span>
                       </div>
                     </td>
@@ -163,10 +164,18 @@ const DepositMethod = () => {
                           <IoReloadOutline className="animate-spin" />
                         ) : (
                           <div className="flex items-center gap-4">
-                            <AiOutlineEdit
-                              title="Edit"
-                              className="text-3xl text-blue-600 hover:text-blue-800 hover:cursor-pointer"
-                            />
+                            <Link
+                              to={`/dashboard/edit-depositmethod/${gateway?._id}`}
+                              className={`${
+                                gateway?.status === "active" ? "" : "invisible"
+                              }`}
+                            >
+                              <AiOutlineEdit
+                                title="Edit"
+                                className="text-3xl text-blue-600 hover:text-blue-800 hover:cursor-pointer"
+                              />
+                            </Link>
+
                             <AiOutlineDelete
                               title="Delete"
                               onClick={() => handleOpenModal(gateway)}

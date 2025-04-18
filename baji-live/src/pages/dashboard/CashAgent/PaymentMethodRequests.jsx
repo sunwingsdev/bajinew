@@ -23,11 +23,13 @@ const PaymentMethodRequests = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const { addToast } = useToasts();
 
-  const filteredNumbers = allPaymentNumbers?.filter((payNum) =>
-    payNum?.userInfo?.username
-      ?.toLowerCase()
-      ?.includes(searchQuery?.toLowerCase())
-  );
+  const filteredNumbers = allPaymentNumbers
+    ?.filter((payNum) => payNum?.channel !== "apay")
+    ?.filter((payNum) =>
+      payNum?.userInfo?.username
+        ?.toLowerCase()
+        ?.includes(searchQuery?.toLowerCase())
+    );
 
   const paginatedNumbers = filteredNumbers?.slice(
     (currentPage - 1) * rowsPerPage,

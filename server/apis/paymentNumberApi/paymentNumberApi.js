@@ -7,7 +7,7 @@ const paymentNumberApi = (paymentNumberCollection) => {
   // add a payment number
   router.post("/", async (req, res) => {
     const paymentNumberInfo = req.body;
-    paymentNumberInfo.status = "pending";
+    paymentNumberInfo.status = paymentNumberInfo.status || "pending";
     paymentNumberInfo.createdAt = new Date();
     const result = await paymentNumberCollection.insertOne(paymentNumberInfo);
     res.send(result);

@@ -155,7 +155,7 @@ const AccountDetailsMobile = ({ setDrawerOpen }) => {
                   />
                 </div>
                 <div className="w-5/6 space-y-2">
-                  <p className="text-xl">{user?.user.fullName}</p>
+                  <p className="text-xl">{user?.fullName}</p>
                   <div className="bg-[#333333] flex items-center justify-center gap-2 px-3 py-2 text-[10px] rounded-full w-fit">
                     <p>
                       {" "}

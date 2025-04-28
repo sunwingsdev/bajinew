@@ -51,39 +51,60 @@ const depositsApi = (depositsCollection, usersCollection) => {
     }
   });
 
-  router.patch("/status/:id", async (req, res) => {
-    const { id } = req.params;
+  // Get all deposits for a specific user
+  router.get("/user/:userId", async (req, res) => {
+    const { userId } = req.params;
 
     try {
-      // Find the deposit by its ID
+      const result = await depositsCollection
+        .find({ userId: userId })
+        .toArray();
+
+      res.send(result);
+    } catch (error) {
+      console.error("Error fetching user deposits:", error);
+      res.status(500).send({ error: "Failed to fetch user deposits" });
+    }
+  });
+
+  router.patch("/status/:id", async (req, res) => {
+    const { id } = req.params;
+    const { status, reason } = req.body;
+
+    try {
       const deposit = await depositsCollection.findOne({
         _id: new ObjectId(id),
       });
-      console.log(deposit);
+
       if (!deposit) {
         return res.status(404).send({ error: "Deposit not found" });
       }
 
-      // Ensure the deposit is in a pending state
       if (deposit.status !== "pending") {
         return res
           .status(400)
           .send({ error: "Deposit is not in a pending state" });
       }
 
-      // Update deposit status to "completed"
-      await depositsCollection.updateOne(
+      const updateFields = { status };
+      if (status === "rejected") {
+        updateFields.reason = reason;
+      }
+
+      const updateResult = await depositsCollection.updateOne(
         { _id: new ObjectId(id) },
-        { $set: { status: "completed" } }
+        { $set: updateFields }
       );
 
-      // Increment the user's balance
-      const result = await usersCollection.updateOne(
-        { _id: new ObjectId(deposit.userId) },
-        { $inc: { balance: deposit.amount } }
-      );
-      console.log(result);
-      res.send(result);
+      // Only increase balance if completed
+      if (status === "completed") {
+        await usersCollection.updateOne(
+          { _id: new ObjectId(deposit.userId) },
+          { $inc: { balance: deposit.amount } }
+        );
+      }
+
+      res.send(updateResult);
     } catch (error) {
       console.error("Error updating deposit status:", error);
       res.status(500).send({ error: "Failed to update deposit status" });

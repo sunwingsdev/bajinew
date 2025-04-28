@@ -7,7 +7,7 @@ const paymentMethodApi = (paymentMethodCollection) => {
   router.post("/", async (req, res) => {
     const paymentMethodInfo = req.body;
     paymentMethodInfo.createdAt = new Date();
-    paymentMethodInfo.status = "deactive";
+    paymentMethodInfo.status = "inactive";
     const result = await paymentMethodCollection.insertOne(paymentMethodInfo);
     res.send(result);
   });

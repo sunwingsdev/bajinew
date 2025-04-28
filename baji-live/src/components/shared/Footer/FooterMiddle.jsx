@@ -1,8 +1,11 @@
 import { Link } from "react-router-dom";
 import HeadingContent from "../HeadingContent";
 import HeadingImageContent from "../HeadingImageContent";
+import { useGetPagesDetailQuery } from "@/redux/features/allApis/pagesApi/pagesApi";
 
 const FooterMiddle = () => {
+  const { data: allPages } = useGetPagesDetailQuery();
+  console.log(allPages);
   const services = [
     {
       id: 1,
@@ -247,6 +250,16 @@ const FooterMiddle = () => {
           contents={brandAmbassadors}
           contentWidth={30}
         />
+      </div>
+
+      <div className="pt-4 flex flex-wrap gap-2">
+        {allPages?.map((page) => (
+          <Link key={page?._id} to={`/pages/${page?.route}`}>
+            <p className="text-xs md:text-base text-white border-r border-r-white pr-2 hover:underline hover:underline-offset-4 uppercase">
+              {page?.route}
+            </p>
+          </Link>
+        ))}
       </div>
 
       <div className="absolute right-5 bottom-5 space-y-3 text-sm hidden md:block">

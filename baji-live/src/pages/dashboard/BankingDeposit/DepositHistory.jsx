@@ -18,7 +18,7 @@ const DepositHistory = () => {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10); // Number of items per page
+  const [itemsPerPage] = useState(8); // Number of items per page
 
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
@@ -30,10 +30,36 @@ const DepositHistory = () => {
   if (isError) return <div>Error loading deposits.</div>;
 
   // Handle status update
-  const handleStatusClick = (deposit, status) => {
-    setSelectedDeposit(deposit);
-    setStatus(status);
-    setModalOpen(true);
+  const handleStatusClick = (deposit, selectedStatus) => {
+    if (selectedStatus === "rejected") {
+      setSelectedDeposit(deposit);
+      setStatus("rejected");
+      setModalOpen(true);
+    } else {
+      // directly update status without reason
+      updateStatus({
+        id: deposit._id,
+        data: {
+          status: selectedStatus,
+          reason: "",
+        },
+      })
+        .unwrap()
+        .then((res) => {
+          if (res.modifiedCount > 0) {
+            addToast("Status updated!", {
+              appearance: "success",
+              autoDismiss: true,
+            });
+          }
+        })
+        .catch(() => {
+          addToast("Error updating status", {
+            appearance: "error",
+            autoDismiss: true,
+          });
+        });
+    }
   };
 
   const handleSubmit = async (reason) => {
@@ -45,8 +71,9 @@ const DepositHistory = () => {
       },
     };
     try {
-      const { data } = await updateStatus(statusInfo);
-      if (data.modifiedCount > 0) {
+      const res = await updateStatus(statusInfo).unwrap();
+      console.log(res);
+      if (res.modifiedCount > 0) {
         addToast("Status updated!", {
           appearance: "success",
           autoDismiss: true,
@@ -100,6 +127,42 @@ const DepositHistory = () => {
     setCurrentPage(1); // Reset to the first page when sorting changes
   };
 
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+
+    const day = date.getDate();
+    const month = date.toLocaleString("default", { month: "long" }); // April
+    const year = date.getFullYear();
+
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+
+    // 12-hour format
+    const ampm = hours >= 12 ? "PM" : "AM";
+    const formattedHours = hours % 12 || 12; // 0 => 12
+
+    const formattedMinutes = minutes.toString().padStart(2, "0");
+
+    // day এর সাথে th/st/nd/rd বসানো
+    const getDaySuffix = (day) => {
+      if (day > 3 && day < 21) return "th";
+      switch (day % 10) {
+        case 1:
+          return "st";
+        case 2:
+          return "nd";
+        case 3:
+          return "rd";
+        default:
+          return "th";
+      }
+    };
+
+    return `${day}${getDaySuffix(
+      day
+    )} ${month} ${year} | ${formattedHours}:${formattedMinutes} ${ampm}`;
+  };
+
   return (
     <div>
       <div className="bg-[#172437] flex flex-row items-center justify-between p-4 mb-2">
@@ -128,175 +191,94 @@ const DepositHistory = () => {
         </div>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse border border-gray-700">
-          <thead>
-            <tr className="bg-gray-700 text-white">
-              <th className="px-4 py-2">Name</th>
-              <th className="px-4 py-2">Deposit Method</th>
-              <th className="px-4 py-2">Sender Inputs</th>
-              <th className="px-4 py-2">Amount</th>
-              <th className="px-4 py-2">Slip</th>
-              <th className="px-4 py-2">Reason</th>
-              <th className="px-4 py-2">Added Balance</th>
-              <th className="px-4 py-2">Time & Date</th>
-              <th className="px-4 py-2">Status</th>
+        <table className="min-w-full bg-white shadow rounded-lg text-sm">
+          <thead className="bg-blue-500 text-center text-white text-lg">
+            <tr className="border border-blue-300">
+              <th className="p-3 border-r border-r-blue-300">Sender Name</th>
+              <th className="p-3 border-r border-r-blue-300">Deposit Method</th>
+              <th className="p-3 border-r border-r-blue-300">Channel</th>
+              <th className="p-3 border-r border-r-blue-300">Amount</th>
+              <th className="p-3 border-r border-r-blue-300">Sender Info</th>
+              <th className="p-3 border-r border-r-blue-300">Date & Time</th>
+              <th className="p-3 border-r border-r-blue-300">Status</th>
+              <th className="p-3 border-r border-r-blue-300">Reason</th>
+              <th className="p-3">Promotion</th>
             </tr>
           </thead>
           <tbody>
-            {currentItems?.map((deposit, index) => {
-              const paymentInputs = Array.isArray(deposit?.paymentInputs)
-                ? deposit.paymentInputs
-                : [];
+            {currentItems?.map((deposit) => (
+              <tr
+                key={deposit._id}
+                className="border-b border-b-blue-300 hover:bg-blue-200 text-center border border-blue-300"
+              >
+                <td className="p-3 border-r border-r-blue-300">
+                  {deposit.userInfo?.username || "N/A"}
+                </td>
+                <td className="p-3 border-r border-r-blue-300 capitalize">
+                  {deposit.paymentMethod}
+                </td>
+                <td className="p-3 border-r border-r-blue-300 capitalize">
+                  {deposit.depositChannel}
+                </td>
+                <td className="p-3 border-r border-r-blue-300">
+                  {deposit.amount} ৳
+                </td>
+                <td className="p-3 border-r border-r-blue-300">
+                  <div>
+                    <p>
+                      <span className="font-medium">
+                        {deposit.userInputs?.senderNumber && "Number"}:
+                      </span>{" "}
+                      {deposit.userInputs?.senderNumber || "N/A"}
+                    </p>
+                    <p>
+                      <span className="font-medium">
+                        {deposit.userInputs?.transactionId && "Trnx ID"}:
+                      </span>{" "}
+                      {deposit.userInputs?.transactionId || "N/A"}
+                    </p>
+                  </div>
+                </td>
+                <td className="p-3 border-r border-r-blue-300">
+                  {formatDate(deposit.createdAt)}
+                </td>
+                <td className="p-3 border-r border-r-blue-300">
+                  <select
+                    value={deposit.status}
+                    onChange={(e) => handleStatusClick(deposit, e.target.value)}
+                    className={`px-2 py-1 rounded border text-sm ${
+                      deposit.status === "pending"
+                        ? "border-yellow-600 text-yellow-600"
+                        : deposit.status === "completed"
+                        ? "border-green-600 text-green-600"
+                        : "border-red-600 text-red-600"
+                    }`}
+                  >
+                    <option value="pending" className="text-yellow-600">
+                      Pending
+                    </option>
+                    <option value="completed" className="text-green-600">
+                      Completed
+                    </option>
+                    <option value="rejected" className="text-red-600">
+                      Rejected
+                    </option>
+                  </select>
+                </td>
 
-              return paymentInputs.map((input, inputIndex) => (
-                <tr
-                  key={`${deposit?._id}-${inputIndex}`}
-                  className={`${
-                    index % 2 === 0 ? "bg-gray-100" : "bg-gray-200"
-                  } text-black`}
-                >
-                  {inputIndex === 0 && (
-                    <>
-                      <td
-                        rowSpan={paymentInputs.length || 1}
-                        className="px-4 py-2 font-medium"
-                      >
-                        {deposit?.userInfo?.username || "N/A"}
-                      </td>
-                      <td
-                        rowSpan={paymentInputs.length || 1}
-                        className="px-4 py-2"
-                      >
-                        {deposit?.method || "N/A"}
-                      </td>
-                    </>
+                <td className="p-3 border-r border-r-blue-300">
+                  {deposit.reason || "N/A"}
+                </td>
+
+                <td className="p-3 text-center">
+                  {deposit.promotion ? (
+                    <div>{deposit.promotion.title}</div>
+                  ) : (
+                    "N/A"
                   )}
-                  <td className="px-4 py-4 inline-flex">
-                    {Object.entries(input || {}).map(([key, value]) => {
-                      const isImage =
-                        typeof value === "string" &&
-                        /\.(jpg|jpeg|png|gif)$/i.test(value);
-
-                      if (isImage) {
-                        return (
-                          <Link
-                            target="_blank"
-                            rel="noreferrer noopener"
-                            to={`${import.meta.env.VITE_BASE_API_URL}${value}`}
-                            key={key}
-                          >
-                            <img
-                              src={`${
-                                import.meta.env.VITE_BASE_API_URL
-                              }${value}`}
-                              alt="Deposit Screenshot"
-                              className="w-full h-24 object-cover rounded"
-                            />
-                          </Link>
-                        );
-                      }
-                      return (
-                        <span
-                          key={key}
-                          className="font-bold capitalize inline-flex"
-                        >
-                          {key}: {value || "N/A"}
-                        </span>
-                      );
-                    })}
-                  </td>
-
-                  {inputIndex === 0 && (
-                    <>
-                      <td
-                        rowSpan={paymentInputs.length || 1}
-                        className="px-4 py-2"
-                      >
-                        {deposit?.amount || "N/A"}
-                      </td>
-                      <td
-                        rowSpan={paymentInputs.length || 1}
-                        className="px-4 py-2 text-center"
-                      >
-                        <IoCloudUploadOutline className="text-2xl cursor-pointer" />
-                      </td>
-                      <td
-                        rowSpan={paymentInputs.length || 1}
-                        className="px-4 py-2 text-center"
-                      >
-                        {deposit?.reason || "N/A"}
-                      </td>
-                      <td
-                        rowSpan={paymentInputs.length || 1}
-                        className="px-4 py-2 text-center"
-                      >
-                        {deposit?.addedBalance || "N/A"}
-                      </td>
-                      <td
-                        rowSpan={paymentInputs.length || 1}
-                        className="px-4 py-2"
-                      >
-                        {deposit?.createdAt
-                          ? new Date(deposit.createdAt).toLocaleString(
-                              "en-GB",
-                              {
-                                day: "2-digit",
-                                month: "2-digit",
-                                year: "2-digit",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                hour12: true,
-                              }
-                            )
-                          : "N/A"}
-                      </td>
-                      <td
-                        rowSpan={paymentInputs.length || 1}
-                        className="px-4 py-2 text-center"
-                      >
-                        {deposit?.status === "pending" ? (
-                          <div className="flex flex-col gap-2">
-                            <button
-                              className="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600"
-                              onClick={() =>
-                                handleStatusClick(deposit, "completed")
-                              }
-                            >
-                              Complete
-                            </button>
-                            <button
-                              className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600"
-                              onClick={() =>
-                                handleStatusClick(deposit, "rejected")
-                              }
-                            >
-                              Reject
-                            </button>
-                          </div>
-                        ) : (
-                          <span
-                            className={`rounded-full px-3 py-1 text-white capitalize ${
-                              deposit?.status === "rejected"
-                                ? "bg-red-500"
-                                : "bg-green-500"
-                            }`}
-                          >
-                            {deposit?.status}
-                          </span>
-                        )}
-                      </td>
-                    </>
-                  )}
-                </tr>
-              ));
-            })}
-            {currentItems?.length === 0 && (
-              <tr>
-                <td colSpan="9" className="text-center py-4 text-gray-500">
-                  No deposits found.
                 </td>
               </tr>
-            )}
+            ))}
           </tbody>
         </table>
       </div>
@@ -332,10 +314,9 @@ const DepositHistory = () => {
 
       <ReasonModal
         isOpen={modalOpen}
-        onClose={handleCloseModal}
-        onSubmit={handleSubmit}
+        onClose={() => setModalOpen(false)}
         status={status}
-        deposit={selectedDeposit}
+        onSubmit={handleSubmit}
       />
     </div>
   );

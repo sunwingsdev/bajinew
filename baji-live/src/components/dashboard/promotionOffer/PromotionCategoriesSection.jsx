@@ -1,13 +1,13 @@
 import OppsModal from "@/components/shared/Modals/OppsModal";
 import { Button } from "@/components/ui/button";
-import { useGetAllCategoriesQuery } from "@/redux/features/allApis/categoryApi/categoryApi";
 import { useState } from "react";
 import { IoAdd } from "react-icons/io5";
 import CategoryUploadForm from "./CategoryUploadForm";
 import { FaTrash } from "react-icons/fa";
+import { useGetAllPromotionCategoriesQuery } from "@/redux/features/allApis/promotionApi/promotionCategoryApi";
 
 const PromotionCategoriesSection = () => {
-  const { data: categories, isLoading } = useGetAllCategoriesQuery();
+  const { data: categories, isLoading } = useGetAllPromotionCategoriesQuery();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const promotionCategories = categories?.filter(

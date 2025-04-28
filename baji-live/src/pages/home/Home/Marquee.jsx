@@ -18,12 +18,14 @@ const Marquee = () => {
                 <span className="text-xs">
                   {" "}
                   প্রিয় বাংলালিংক গ্রাহকবৃন্দ, অনুগ্রহ করে প্রদত্ত লিংকটি
-                  ব্যবহার করে আমাদের ওয়েবসাইটে প্রবেশ করুন joy91111.com{" "}
+                  ব্যবহার করে আমাদের ওয়েবসাইটে প্রবেশ করুন{" "}
+                  {import.meta.env.VITE_SITE_NAME}.com{" "}
                 </span>
               </span>
               <span className="mx-6 inline-block text-xs">
                 প্রিয় বাংলালিংক গ্রাহকবৃন্দ, অনুগ্রহ করে প্রদত্ত লিংকটি ব্যবহার
-                করে আমাদের ওয়েবসাইটে প্রবেশ করুন joy91111.com
+                করে আমাদের ওয়েবসাইটে প্রবেশ করুন{" "}
+                {import.meta.env.VITE_SITE_NAME}.com
               </span>
             </div>
           </div>

@@ -22,6 +22,7 @@ const AddGames = ({ isOpen, setIsOpen, selectedApiName }) => {
   const [loading, setLoading] = useState(false);
   const { data: allCategories } = useGetAllCategoriesQuery();
   const { data: allHomeGames } = useGetAllHomeGamesQuery();
+  console.log(allHomeGames);
   const { data: allSubCategories } = useGetAllSubCategoriesQuery();
 
   const [uploadImage] = useUploadImageMutation();

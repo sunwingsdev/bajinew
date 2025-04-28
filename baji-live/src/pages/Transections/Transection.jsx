@@ -1,11 +1,16 @@
 import WalletSection from "@/components/home/WalletSection/WalletSection";
 import DynamicTable from "@/components/shared/tables/DynamicTable";
+import { useGetDepositsByUserQuery } from "@/redux/features/allApis/depositsApi/depositsApi";
+import { useGetWithdrawsByUserQuery } from "@/redux/features/allApis/withdrawsApi/withdrawsApi";
 import { useState } from "react";
 import { FcOk } from "react-icons/fc";
+import { useSelector } from "react-redux";
 
 const Transection = () => {
+  const { user } = useSelector((state) => state.auth);
+  console.log(user);
   // State for selected buttons
-  const [selectedType, setSelectedType] = useState("");
+  const [selectedType, setSelectedType] = useState("ডিপোজিট");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
 
@@ -14,23 +19,121 @@ const Transection = () => {
   const handleStatusClick = (status) => setSelectedStatus(status);
   const handleDateClick = (date) => setSelectedDate(date);
 
-  const data = [
-    {
-      name: "Agent001",
-      number: "12546",
-      amount: 5300,
-      date: 23 / 10 / 24,
-      status: "ok",
-    },
+  const {
+    data: userDeposits,
+    isLoading: depositLoading,
+    isError: depositError,
+  } = useGetDepositsByUserQuery(user?._id);
+  const {
+    data: userWithdraws,
+    isLoading: withdrawLoading,
+    isError: withdrawError,
+  } = useGetWithdrawsByUserQuery(user?._id);
+  console.log(userDeposits);
+  console.log(userWithdraws);
+
+  let dynamicData = [];
+
+  if (selectedType === "ডিপোজিট") {
+    dynamicData = userDeposits || [];
+  } else if (selectedType === "উইথড্র") {
+    dynamicData = userWithdraws || [];
+  }
+
+  const statusMap = {
+    পেন্ডিং: "pending",
+    কমপ্লিট: "completed",
+    রিজেক্ট: "rejected",
+    অল: "",
+  };
+
+  // Status and Date Filtering
+  dynamicData = dynamicData?.filter((item) => {
+    // Status Filter
+    const statusMatch =
+      selectedStatus === "" ||
+      selectedStatus === "অল" ||
+      item.status === statusMap[selectedStatus];
+
+    // Date Filter
+    const today = new Date();
+    const itemDate = new Date(item.createdAt);
+
+    let dateMatch = true; // default সব মিলে যাবে
+    if (selectedDate === "আজ") {
+      dateMatch =
+        itemDate.getDate() === today.getDate() &&
+        itemDate.getMonth() === today.getMonth() &&
+        itemDate.getFullYear() === today.getFullYear();
+    } else if (selectedDate === "গতকাল") {
+      const yesterday = new Date(today);
+      yesterday.setDate(today.getDate() - 1);
+      dateMatch =
+        itemDate.getDate() === yesterday.getDate() &&
+        itemDate.getMonth() === yesterday.getMonth() &&
+        itemDate.getFullYear() === yesterday.getFullYear();
+    } else if (selectedDate === "শেষ 7 দিন") {
+      const sevenDaysAgo = new Date(today);
+      sevenDaysAgo.setDate(today.getDate() - 7);
+      dateMatch = itemDate >= sevenDaysAgo && itemDate <= today;
+    }
+
+    return statusMatch && dateMatch;
+  });
+
+  const depositColumns = [
+    { headerName: "Payment Method", field: "paymentMethod" },
+    { headerName: "Deposit Channel", field: "depositChannel" },
+    { headerName: "Amount", field: "amount" },
+    { headerName: "Status", field: "status" },
+    { headerName: "Date", field: "createdAt" },
+    { headerName: "Reason", field: "reason" },
   ];
 
-  const columns = [
-    { headerName: "টাইপ", field: "name" },
-    { headerName: "না", field: "number" },
-    { headerName: "এমাউন্ট", field: "amount" },
-    { headerName: "তারিখ", field: "date" },
-    { headerName: "স্ট্যাটাস", field: "status" },
+  const withdrawColumns = [
+    { headerName: "Payment Method", field: "paymentMethod" },
+    { headerName: "Amount", field: "amount" },
+    { headerName: "Status", field: "status" },
+    { headerName: "Date", field: "createdAt" },
+    { headerName: "Reason", field: "reason" },
   ];
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    const day = date.getDate();
+    const month = date.toLocaleString("en-US", { month: "long" });
+    const year = date.getFullYear();
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? "PM" : "AM";
+    const formattedHours = hours % 12 || 12;
+    const formattedMinutes = minutes.toString().padStart(2, "0");
+    const getOrdinal = (n) => {
+      if (n > 3 && n < 21) return "th";
+      switch (n % 10) {
+        case 1:
+          return "st";
+        case 2:
+          return "nd";
+        case 3:
+          return "rd";
+        default:
+          return "th";
+      }
+    };
+    const ordinal = getOrdinal(day);
+    return `${day}${ordinal} ${month} ${year} | ${formattedHours}:${formattedMinutes} ${ampm}`;
+  };
+
+  const sortedData = [...dynamicData].sort((a, b) => {
+    return new Date(b.createdAt) - new Date(a.createdAt);
+  });
+
+  const formattedDynamicData = sortedData?.map((item) => ({
+    ...item,
+    createdAt: formatDate(item.createdAt),
+  }));
 
   return (
     <div className="space-y-2 text-nowrap">
@@ -43,7 +146,7 @@ const Transection = () => {
           {/* Type Section */}
           <div className="">
             <h1 className="p-2">টাইপ</h1>
-            <div className="flex items-center gap-4 text-sm">
+            <div className="flex flex-wrap items-center gap-4 text-sm">
               {["ডিপোজিট", "উইথড্র", "অ্যাডজাস্টমেন্ট", "অল"].map((type) => (
                 <button
                   key={type}
@@ -66,8 +169,8 @@ const Transection = () => {
           {/* Status Section */}
           <div className="">
             <h1 className="p-2">স্ট্যাটাস</h1>
-            <div className="flex items-center gap-4 text-sm">
-              {["প্রসেসিং", "সাকসেস", "ফেইল", "অল"].map((status) => (
+            <div className="flex flex-wrap items-center gap-4 text-sm">
+              {["পেন্ডিং", "কমপ্লিট", "রিজেক্ট", "অল"].map((status) => (
                 <button
                   key={status}
                   onClick={() => handleStatusClick(status)}
@@ -123,7 +226,16 @@ const Transection = () => {
           <h1 className="p-2">রেকর্ড</h1>
         </div>
         <div>
-          <DynamicTable columns={columns} data={data} />
+          {/* <DynamicTable columns={columns} data={dynamicData} /> */}
+          <DynamicTable
+            columns={
+              selectedType === "ডিপোজিট" ? depositColumns : withdrawColumns
+            }
+            data={formattedDynamicData}
+            loading={
+              selectedType === "ডিপোজিট" ? depositLoading : withdrawLoading
+            }
+          />
         </div>
       </div>
     </div>

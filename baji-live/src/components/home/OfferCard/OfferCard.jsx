@@ -3,10 +3,15 @@ import SecondaryButton from "@/components/shared/Buttons/SecondaryButton";
 import { IoTimeOutline } from "react-icons/io5";
 
 const OfferCard = ({ offer }) => {
-  const { image, title, subtitle, time } = offer;
+  console.log(offer);
+  const { image, title, subtitle, createdAt } = offer;
   return (
     <div className="bg-[#8e8e8e] rounded-md">
-      <img className="rounded-t-md" src={image} alt="" />
+      <img
+        className="rounded-t-md"
+        src={`${import.meta.env.VITE_BASE_API_URL}${image}`}
+        alt=""
+      />
       <div className={""}>
         <div className="pb-2 relative">
           <div className="border-dashed absolute -top-4 w-full h-4 border-t-4 border-[#8E8E8E]"></div>
@@ -20,7 +25,7 @@ const OfferCard = ({ offer }) => {
             <p>{subtitle}</p>
             <div className="flex items-center gap-2">
               <IoTimeOutline className="text-xl" />
-              <p>{time}</p>
+              <p>{createdAt}</p>
             </div>
             <div className="flex items-center gap-4">
               <PrimaryButton to="/register">সাইন আপ</PrimaryButton>

@@ -7,7 +7,7 @@ import { useGetHomeControlsQuery } from "@/redux/features/allApis/homeControlApi
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "@/redux/slices/authSlice";
 import { useToasts } from "react-toast-notifications";
-import { FaRegUserCircle } from "react-icons/fa";
+import { FaRegUserCircle, FaRegCircle } from "react-icons/fa";
 
 const DashboardMobilMenu = ({ open, menuItems, logOutPath, dashboardLink }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -143,28 +143,28 @@ const DashboardMobilMenu = ({ open, menuItems, logOutPath, dashboardLink }) => {
         {/* Menu Items with Fixed Icons and Dynamic Submenu */}
         <div className="text-white bg-[#172437]">
           {menuItems.map((item) => (
-            <div key={item.name}>
+            <div key={item.label}>
               <div
                 className={`py-2.5 px-4 flex items-center justify-between border-b border-gray-400 ${
                   item.submenu?.length > 0 ? "cursor-pointer" : ""
                 }`}
                 onClick={() =>
-                  item.submenu?.length > 0 && toggleSubmenu(item.name)
+                  item.submenu?.length > 0 && toggleSubmenu(item.label)
                 }
               >
                 <div className="flex items-center">
                   {item.icon}
                   <Link
-                    to={item.path}
+                    to={item.to}
                     className="ml-2 block"
                     onClick={handleSubmenuClick}
                   >
-                    {item.name}
+                    {item.label}
                   </Link>
                 </div>
                 {item.submenu?.length > 0 && (
                   <div>
-                    {openSubmenu === item.name ? (
+                    {openSubmenu === item.label ? (
                       <IoIosArrowDown size={20} />
                     ) : (
                       <IoIosArrowForward size={20} />
@@ -172,16 +172,20 @@ const DashboardMobilMenu = ({ open, menuItems, logOutPath, dashboardLink }) => {
                   </div>
                 )}
               </div>
-              {openSubmenu === item.name && (
+              {openSubmenu === item.label && (
                 <div className="pl-4">
                   {item.submenu.map((submenuItem) => (
-                    <div key={submenuItem.name} className="py-2.5 pl-6 text-sm">
+                    <div
+                      key={submenuItem.label}
+                      className="py-2.5 pl-6 text-sm flex items-center gap-2"
+                    >
+                      <FaRegCircle className="text-gray-400" />
                       <Link
-                        to={submenuItem.path}
+                        to={submenuItem.to}
                         className="block"
                         onClick={handleSubmenuClick}
                       >
-                        {submenuItem.name}
+                        {submenuItem.label}
                       </Link>
                     </div>
                   ))}

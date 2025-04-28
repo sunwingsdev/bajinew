@@ -79,7 +79,7 @@ const GameCategories = () => {
   };
 
   const handleDeleteCategory = async (id) => {
-    Swal.fire({
+    const result = await Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
       icon: "warning",
@@ -87,18 +87,26 @@ const GameCategories = () => {
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
       confirmButtonText: "Yes, delete it!",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          const response = await deleteCategory(id);
-          if (response?.data?.deletedCount > 0) {
-            Swal.fire("Deleted!", "Category has been deleted.", "success");
-          }
-        } catch (error) {
-          Swal.fire("Error!", "Failed to delete category.", "error");
-        }
-      }
     });
+
+    if (result.isConfirmed) {
+      try {
+        const response = await deleteCategory(id);
+
+        if (response?.data?.deletedCategory?.deletedCount > 0) {
+          await Swal.fire(
+            "Deleted!",
+            "Category and its sub categories and games have been deleted.",
+            "success"
+          );
+        } else {
+          await Swal.fire("Oops!", "Nothing was deleted.", "info");
+        }
+      } catch (error) {
+        console.error(error);
+        await Swal.fire("Error!", "Failed to delete category.", "error");
+      }
+    }
   };
 
   return (

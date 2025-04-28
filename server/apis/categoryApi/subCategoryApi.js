@@ -1,7 +1,7 @@
 const express = require("express");
 const { ObjectId } = require("mongodb");
 
-const subCategoryApi = (subCategoryCollection) => {
+const subCategoryApi = (subCategoryCollection, homeGamesCollection) => {
   const router = express.Router();
 
   // Add a sub category
@@ -34,12 +34,42 @@ const subCategoryApi = (subCategoryCollection) => {
     res.send(result);
   });
 
-  // Delete a sub-category
+  // Delete a sub-category and its related games
   router.delete("/:id", async (req, res) => {
     const id = req.params.id;
-    const filter = { _id: new ObjectId(id) };
-    const result = await subCategoryCollection.deleteOne(filter);
-    res.send(result);
+
+    try {
+      // Step 1: Find the sub-category by ID
+      const subCategory = await subCategoryCollection.findOne({
+        _id: new ObjectId(id),
+      });
+      if (!subCategory) {
+        return res.status(404).send({ error: "Sub-category not found." });
+      }
+
+      const subCategoryName = subCategory.name;
+
+      // Step 2: Delete all games under this sub-category
+      const gameDeleteResult = await homeGamesCollection.deleteMany({
+        subCategory: subCategoryName,
+      });
+
+      // Step 3: Delete the sub-category
+      const subCategoryDeleteResult = await subCategoryCollection.deleteOne({
+        _id: new ObjectId(id),
+      });
+
+      res.send({
+        message: "Sub-category and related games deleted successfully.",
+        deletedSubCategory: subCategoryDeleteResult,
+        deletedGames: gameDeleteResult.deletedCount,
+      });
+    } catch (error) {
+      console.error("Delete Error:", error);
+      res
+        .status(500)
+        .send({ error: "Failed to delete sub-category and games." });
+    }
   });
 
   return router;

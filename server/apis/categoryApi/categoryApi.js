@@ -1,7 +1,11 @@
 const express = require("express");
 const { ObjectId } = require("mongodb");
 
-const categoryApi = (categoryCollection) => {
+const categoryApi = (
+  categoryCollection,
+  subCategoryCollection,
+  homeGamesCollection
+) => {
   const router = express.Router();
 
   // Add a category
@@ -34,17 +38,50 @@ const categoryApi = (categoryCollection) => {
     }
   });
 
-  // Delete a category by ID
+  // Delete a category by ID and its related games + subcategories
   router.delete("/:id", async (req, res) => {
     const id = req.params.id;
 
     try {
-      const result = await categoryCollection.deleteOne({
+      // Step 1: Find the category name using its ID
+      const category = await categoryCollection.findOne({
         _id: new ObjectId(id),
       });
-      res.send(result);
+      if (!category) {
+        return res.status(404).send({ error: "Category not found." });
+      }
+
+      const categoryName = category.name;
+
+      // Step 2: Delete all games under that category
+      const gameDeleteResult = await homeGamesCollection.deleteMany({
+        category: categoryName,
+      });
+
+      // Step 3: Delete all sub-categories under that category
+      const subCategoryDeleteResult = await subCategoryCollection.deleteMany({
+        category: categoryName,
+      });
+
+      // Step 4: Delete the category itself
+      const categoryDeleteResult = await categoryCollection.deleteOne({
+        _id: new ObjectId(id),
+      });
+
+      res.send({
+        message:
+          "Category, related games, and sub-categories deleted successfully.",
+        deletedCategory: categoryDeleteResult,
+        deletedGames: gameDeleteResult.deletedCount,
+        deletedSubCategories: subCategoryDeleteResult.deletedCount,
+      });
     } catch (error) {
-      res.status(500).send({ error: "Failed to delete category." });
+      console.error("Delete Error:", error);
+      res
+        .status(500)
+        .send({
+          error: "Failed to delete category, games, and sub-categories.",
+        });
     }
   });
 

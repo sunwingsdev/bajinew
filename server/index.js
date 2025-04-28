@@ -18,9 +18,11 @@ const subCategoryApi = require("./apis/categoryApi/subCategoryApi");
 const homeGamesApi = require("./apis/homeGamesApi/homeGamesApi");
 const kycApi = require("./apis/kycApi/kycApi");
 const promotionApi = require("./apis/promotionApi/promotionApi");
+const promotionCategoryApi = require("./apis/promotionApi/promotionCategoryApi");
 const pagesApi = require("./apis/pagesApi/pagesApi");
 const paymentNumberApi = require("./apis/paymentNumberApi/paymentNumberApi");
 const paymentMethodApi = require("./apis/paymentMethodApi/paymentMethodApi");
+const withdrawMethodApi = require("./apis/paymentMethodApi/withdrawMethodApi");
 const referCodeApi = require("./apis/referCodeApi/referCodeApi");
 const commissionApi = require("./apis/commissionApi/commissionApi");
 
@@ -139,6 +141,9 @@ async function run() {
     const homeGamesCollection = client.db("bajinew").collection("homeGames");
     const kycCollection = client.db("bajinew").collection("kyc");
     const promotionCollection = client.db("bajinew").collection("promotions");
+    const promotionCategoryCollection = client
+      .db("bajinew")
+      .collection("promotion-categories");
     const pagesCollection = client.db("bajinew").collection("pages");
     const paymentNumberCollection = client
       .db("bajinew")
@@ -146,6 +151,9 @@ async function run() {
     const paymentMethodCollection = client
       .db("bajinew")
       .collection("payment-methods");
+    const withdrawMethodCollection = client
+      .db("bajinew")
+      .collection("withdraw-methods");
     const referCodesCollection = client.db("bajinew").collection("refer-links");
     const commissionsCollection = client
       .db("bajinew")
@@ -158,14 +166,29 @@ async function run() {
     app.use("/deposits", depositsApi(depositsCollection, usersCollection));
     app.use("/withdraws", withdrawsApi(withdrawsCollection, usersCollection));
     app.use("/home-controls", homeControlApi(homeControlCollection));
-    app.use("/categories", categoryApi(categoryCollection));
-    app.use("/sub-categories", subCategoryApi(subCategoryCollection));
+    app.use(
+      "/categories",
+      categoryApi(
+        categoryCollection,
+        subCategoryCollection,
+        homeGamesCollection
+      )
+    );
+    app.use(
+      "/sub-categories",
+      subCategoryApi(subCategoryCollection, homeGamesCollection)
+    );
     app.use("/homegames", homeGamesApi(homeGamesCollection));
     app.use("/kyc", kycApi(kycCollection, homeControlCollection));
     app.use("/promotions", promotionApi(promotionCollection));
+    app.use(
+      "/promotion-categories",
+      promotionCategoryApi(promotionCategoryCollection)
+    );
     app.use("/pages", pagesApi(pagesCollection));
     app.use("/paymentnumber", paymentNumberApi(paymentNumberCollection));
     app.use("/paymentmethod", paymentMethodApi(paymentMethodCollection));
+    app.use("/withdrawmethod", withdrawMethodApi(withdrawMethodCollection));
     app.use("/refer-links", referCodeApi(referCodesCollection));
     app.use("/commissions", commissionApi(commissionsCollection));
 

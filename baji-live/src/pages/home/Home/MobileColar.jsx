@@ -75,7 +75,7 @@ const MobileColar = () => {
       <Modal
         isOpen={isModalOpen}
         onOpenChange={handleModalClose}
-        title="joy9 এ আপনাকে স্বাগতম"
+        title={`${import.meta.env.VITE_SITE_NAME} এ আপনাকে স্বাগতম`}
         onSave={handleSaveChanges}
       >
         <LoginForm closeModal={handleModalClose} />

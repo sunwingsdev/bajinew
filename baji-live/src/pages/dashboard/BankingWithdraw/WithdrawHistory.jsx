@@ -9,17 +9,65 @@ import {
 import ReasonModal from "@/components/shared/Modals/ReasonModal";
 
 const WithdrawHistory = () => {
-  const [updateWithdrawStatus] = useUpdateWithdrawStatusMutation();
   const { data: allWithdraws, isLoading, isError } = useGetWithdrawsQuery();
+  const [updateWithdrawStatus] = useUpdateWithdrawStatusMutation();
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedWithdraw, setSelectedWithdraw] = useState(null);
   const [status, setStatus] = useState("");
+
+  const itemsPerPage = 10;
+  const [currentPage, setCurrentPage] = useState(1);
+  const sortedWithdraws = allWithdraws
+    ? [...allWithdraws].sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      )
+    : [];
+  const totalPages = Math.ceil(sortedWithdraws?.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = sortedWithdraws?.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
+
+  const paginate = (pageNumber) => {
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+    }
+  };
+
   const { addToast } = useToasts();
 
-  const handleStatusClick = (withdraw, status) => {
-    setSelectedWithdraw(withdraw);
-    setStatus(status);
-    setModalOpen(true);
+  const handleStatusClick = (withdraw, selectedStatus) => {
+    if (selectedStatus === "rejected") {
+      setSelectedWithdraw(withdraw);
+      setStatus("rejected");
+      setModalOpen(true);
+    } else {
+      // directly update status without reason
+      updateWithdrawStatus({
+        id: withdraw._id,
+        data: {
+          status: selectedStatus,
+          reason: "",
+        },
+      })
+        .unwrap()
+        .then((res) => {
+          if (res.modifiedCount > 0) {
+            addToast("Status updated!", {
+              appearance: "success",
+              autoDismiss: true,
+            });
+          }
+        })
+        .catch(() => {
+          addToast("Error updating status", {
+            appearance: "error",
+            autoDismiss: true,
+          });
+        });
+    }
   };
 
   const handleSubmit = async (reason) => {
@@ -51,6 +99,42 @@ const WithdrawHistory = () => {
     setModalOpen(false);
   };
 
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+
+    const day = date.getDate();
+    const month = date.toLocaleString("default", { month: "long" }); // April
+    const year = date.getFullYear();
+
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+
+    // 12-hour format
+    const ampm = hours >= 12 ? "PM" : "AM";
+    const formattedHours = hours % 12 || 12; // 0 => 12
+
+    const formattedMinutes = minutes.toString().padStart(2, "0");
+
+    // day এর সাথে th/st/nd/rd বসানো
+    const getDaySuffix = (day) => {
+      if (day > 3 && day < 21) return "th";
+      switch (day % 10) {
+        case 1:
+          return "st";
+        case 2:
+          return "nd";
+        case 3:
+          return "rd";
+        default:
+          return "th";
+      }
+    };
+
+    return `${day}${getDaySuffix(
+      day
+    )} ${month} ${year} | ${formattedHours}:${formattedMinutes} ${ampm}`;
+  };
+
   if (isLoading) return <div>Loading...</div>;
   if (isError) return <div>Error loading withdrawals.</div>;
 
@@ -70,110 +154,123 @@ const WithdrawHistory = () => {
         </form>
       </div>
       <div className="relative overflow-x-auto">
-        <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-          <thead className="text-xs text-gray-700 uppercase bg-[#172437] dark:bg-[#172437] dark:text-gray-400">
-            <tr>
-              <th scope="col" className="px-3 py-3">
-                Username
-              </th>
-              <th scope="col" className="px-3 py-3">
-                Phone
-              </th>
-              <th scope="col" className="px-3 py-3">
-                Withdraw Gateway
-              </th>
-              <th scope="col" className="px-3 py-3">
-                Number Type
-              </th>
-              <th scope="col" className="px-3 py-3">
+        <table className="min-w-full bg-white shadow rounded-lg text-sm">
+          <thead className="bg-blue-500 text-white text-lg">
+            <tr className="text-center border-l border-l-blue-300">
+              <th className="p-3 border-r border-r-blue-300">Receiver Name</th>
+              <th className="p-3 border-r border-r-blue-300">
                 Withdraw Method
               </th>
-              <th scope="col" className="px-3 py-3">
-                Receiver A/C Number
+
+              <th className="p-3 border-r border-r-blue-300">Amount</th>
+              <th className="p-3 border-r border-r-blue-300">
+                Receiver Number
               </th>
-              <th scope="col" className="px-3 py-3">
-                Amount
-              </th>
-              <th scope="col" className="px-3 py-3">
-                Time & Date
-              </th>
-              <th scope="col" className="px-3 py-3">
-                Status
-              </th>
+              <th className="p-3 border-r border-r-blue-300">Date & Time</th>
+              <th className="p-3 border-r border-r-blue-300">Status</th>
+              <th className="p-3">Reason</th>
             </tr>
           </thead>
           <tbody>
-            {allWithdraws?.map((withdraw, index) => (
+            {currentItems?.map((withdraw) => (
               <tr
                 key={withdraw._id}
-                className={`${
-                  index % 2 === 0 ? "bg-gray-100" : "bg-gray-200"
-                } text-black`}
+                className="border-b border-b-blue-300 hover:bg-blue-200 text-center"
               >
-                <td className="px-2 py-2">
+                <td className="p-3 border-x border-x-blue-300">
                   {withdraw.userInfo?.username || "N/A"}
                 </td>
-                <td className="px-2 py-2">
-                  {withdraw.userInfo?.phone || "N/A"}
+                <td className="p-3 border-r border-r-blue-300 capitalize">
+                  {withdraw.paymentMethod}
                 </td>
-                <td className="px-2 py-2">{withdraw.gateway || "N/A"}</td>
-                <td className="px-2 py-2">{withdraw.receiverType || "N/A"}</td>
-                <td className="px-2 py-2">{withdraw.paymentMethod || "N/A"}</td>
-                <td className="px-2 py-2">
-                  {withdraw?.accountNumber || withdraw?.receiverNumber}
+
+                <td className="p-3 border-r border-r-blue-300">
+                  {withdraw.amount} ৳
                 </td>
-                <td className="px-2 py-2">{withdraw.amount}</td>
-                <td className="px-2 py-2">
-                  {withdraw.createdAt
-                    ? new Date(withdraw.createdAt).toLocaleString("en-GB", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "2-digit",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: true,
-                      })
-                    : "N/A"}
+                <td className="p-3 border-r border-r-blue-300">
+                  {withdraw.withdrawNumber}
                 </td>
-                <td className="px-2 py-2 text-center">
-                  {withdraw.status === "pending" ? (
-                    <div className="flex flex-col gap-2">
-                      <button
-                        className="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600"
-                        onClick={() => handleStatusClick(withdraw, "completed")}
-                      >
-                        Complete
-                      </button>
-                      <button
-                        className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600"
-                        onClick={() => handleStatusClick(withdraw, "rejected")}
-                      >
-                        Reject
-                      </button>
-                    </div>
-                  ) : (
-                    <span
-                      className={`rounded-full px-3 py-1 text-white capitalize ${
-                        withdraw.status === "completed"
-                          ? "bg-green-500"
-                          : "bg-red-500"
-                      }`}
-                    >
-                      {withdraw.status}
-                    </span>
-                  )}
+                {/* <td className="p-3">
+                  <div>
+                    <p>
+                      <span className="font-medium">
+                        {withdraw.userInputs?.withdrawNumber && "Number"}:
+                      </span>{" "}
+                      {withdraw.userInputs?.withdrawNumber || "N/A"}
+                    </p>
+                    <p>
+                      <span className="font-medium">
+                        {withdraw.userInputs?.transactionId && "Trnx ID"}:
+                      </span>{" "}
+                      {withdraw.userInputs?.transactionId || "N/A"}
+                    </p>
+                  </div>
+                </td> */}
+                <td className="p-3 border-r border-r-blue-300">
+                  {formatDate(withdraw.createdAt)}
+                </td>
+                <td className="p-3 border-r border-r-blue-300">
+                  <select
+                    value={withdraw.status}
+                    onChange={(e) =>
+                      handleStatusClick(withdraw, e.target.value)
+                    }
+                    className={`px-2 py-1 rounded border text-sm ${
+                      withdraw.status === "pending"
+                        ? "border-yellow-600 text-yellow-600"
+                        : withdraw.status === "completed"
+                        ? "border-green-600 text-green-600"
+                        : "border-red-600 text-red-600"
+                    }`}
+                  >
+                    <option value="pending" className="text-yellow-600">
+                      Pending
+                    </option>
+                    <option value="completed" className="text-green-600">
+                      Completed
+                    </option>
+                    <option value="rejected" className="text-red-600">
+                      Rejected
+                    </option>
+                  </select>
+                </td>
+
+                <td className="p-3 border-r border-r-blue-300">
+                  {withdraw.reason || "N/A"}
                 </td>
               </tr>
             ))}
-            {allWithdraws?.length === 0 && (
-              <tr>
-                <td colSpan="7" className="text-center py-4 text-gray-500">
-                  No withdrawals found.
-                </td>
-              </tr>
-            )}
           </tbody>
         </table>
+      </div>
+
+      {/* Pagination Controls */}
+      <div className="flex justify-center mt-4">
+        <button
+          onClick={() => paginate(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="px-4 py-2 mx-1 bg-gray-300 rounded disabled:opacity-50"
+        >
+          Previous
+        </button>
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+          <button
+            key={page}
+            onClick={() => paginate(page)}
+            className={`px-4 py-2 mx-1 ${
+              currentPage === page ? "bg-blue-500 text-white" : "bg-gray-300"
+            } rounded`}
+          >
+            {page}
+          </button>
+        ))}
+        <button
+          onClick={() => paginate(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="px-4 py-2 mx-1 bg-gray-300 rounded disabled:opacity-50"
+        >
+          Next
+        </button>
       </div>
       {/* Reason Modal */}
       <ReasonModal

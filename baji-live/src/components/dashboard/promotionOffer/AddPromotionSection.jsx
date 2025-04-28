@@ -5,15 +5,15 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { useToasts } from "react-toast-notifications";
 import { useAddPromotionMutation } from "@/redux/features/allApis/promotionApi/promotionApi";
-import { useGetAllCategoriesQuery } from "@/redux/features/allApis/categoryApi/categoryApi";
 import { uploadImage } from "@/hooks/files";
 import { Button } from "@/components/ui/button";
+import { useGetAllPromotionCategoriesQuery } from "@/redux/features/allApis/promotionApi/promotionCategoryApi";
 
 const AddPromotionSection = () => {
   const { handleSubmit, control, register, reset, watch } = useForm();
   const [addPromotion, { isLoading: addPromoLoading }] =
     useAddPromotionMutation();
-  const { data: categories, isLoading } = useGetAllCategoriesQuery();
+  const { data: categories, isLoading } = useGetAllPromotionCategoriesQuery();
   const [file, setFile] = useState(null);
   const { addToast } = useToasts();
 

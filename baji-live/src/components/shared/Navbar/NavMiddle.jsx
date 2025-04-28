@@ -54,7 +54,7 @@ const NavMiddle = ({ navItems }) => {
   // Fetch user balance on component mount
   useEffect(() => {
     if (!user) return;
-    getSingleUser(user?.user?._id).then(({ data }) => {
+    getSingleUser(user?._id).then(({ data }) => {
       dispatch(setSingleUser(data)); // Save singleUser to Redux
     });
   }, [user]);
@@ -64,7 +64,7 @@ const NavMiddle = ({ navItems }) => {
 
     setLoading(true); // Set loading state to true
 
-    getSingleUser(user?.user?._id)
+    getSingleUser(user?._id)
       .then(({ data }) => {
         dispatch(setSingleUser(data)); // Update Redux store with the latest balance
       })

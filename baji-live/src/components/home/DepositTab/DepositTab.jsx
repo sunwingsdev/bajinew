@@ -2,6 +2,8 @@ import PrimaryButton from "@/components/shared/Buttons/PrimaryButton";
 import { useAddDepositMutation } from "@/redux/features/allApis/depositsApi/depositsApi";
 import { useGetPaymentMethodsQuery } from "@/redux/features/allApis/paymentMethodApi/paymentMethodApi";
 import { useGetAllPaymentNumbersQuery } from "@/redux/features/allApis/paymentNumberApi/paymentNumberApi";
+import { useGetPromotionsQuery } from "@/redux/features/allApis/promotionApi/promotionApi";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { FcOk } from "react-icons/fc";
 import { FiCopy } from "react-icons/fi";
@@ -13,19 +15,28 @@ const DepositTab = () => {
   const { user } = useSelector((state) => state.auth);
   const [addDeposit] = useAddDepositMutation();
   const { data: allPaymentNumbers } = useGetAllPaymentNumbersQuery();
-  console.log(allPaymentNumbers);
+  const { data: promotions } = useGetPromotionsQuery();
+  console.log(promotions);
+  // console.log(allPaymentNumbers);
+  const [selectedPromotion, setSelectedPromotion] = useState(null);
   const [formData, setFormData] = useState({
     paymentMethod: null,
     depositChannel: null,
     amount: [],
     senderNumber: "",
     transactionId: "",
+    promotion: selectedPromotion,
   });
+
+  const [dynamicInputs, setDynamicInputs] = useState({});
+
+  // console.log(selectedPromotion);
   const [selectedNumber, setSelectedNumber] = useState(null);
-  console.log(selectedNumber);
+  // console.log(selectedNumber);
   const { addToast } = useToasts();
 
   const { data: gateways } = useGetPaymentMethodsQuery();
+  // console.log(gateways);
 
   useEffect(() => {
     if (gateways && gateways?.length > 0) {
@@ -64,6 +75,9 @@ const DepositTab = () => {
       ...prev,
       [key]: value,
     }));
+    if (key === "promotion") {
+      setSelectedPromotion(value); // Update selected promotion
+    }
   };
 
   const handlePaymentMethodChange = (method) => {
@@ -93,19 +107,34 @@ const DepositTab = () => {
       return;
     }
     const totalAmount = formData.amount.reduce((acc, amt) => acc + amt, 0);
+
+    let finalAmount = totalAmount;
+    if (selectedPromotion) {
+      if (selectedPromotion.bonusType === "amount") {
+        finalAmount = totalAmount + selectedPromotion.bonusValue;
+      } else if (selectedPromotion.bonusType === "percentage") {
+        finalAmount =
+          totalAmount + totalAmount * (selectedPromotion.bonusValue / 100);
+      }
+    }
+
     const depositInfo = {
       ...formData,
-      amount: totalAmount,
+      amount: finalAmount,
       userId: user?._id,
+      userInputs: dynamicInputs,
     };
 
     try {
       const result = await addDeposit(depositInfo);
       if (result.data.insertedId) {
-        addToast("Amount depositted successfully.Wait for the response", {
-          appearance: "success",
-          autoDismiss: true,
-        });
+        addToast(
+          "Amount depositted successfully. Please Wait for the response",
+          {
+            appearance: "success",
+            autoDismiss: true,
+          }
+        );
         handleReset();
       }
     } catch (error) {
@@ -137,6 +166,78 @@ const DepositTab = () => {
 
   return (
     <div className="text-white space-y-4">
+      {/* Promotion */}
+      <div className="w-full text-white">
+        <div className="flex justify-between items-center mb-2">
+          <h1 className="text-white">প্রোমশন</h1>
+          <div
+            className="flex justify-between items-center bg-yellow-500 p-2 rounded cursor-pointer"
+            onClick={() => setSelectedPromotion(!selectedPromotion)}
+          >
+            <h1>
+              প্রোমশন{" "}
+              <span className="bg-red-600 px-2 py-1 rounded-full">
+                {promotions?.length}
+              </span>
+            </h1>
+            {selectedPromotion ? (
+              <ChevronUp size={18} />
+            ) : (
+              <ChevronDown size={18} />
+            )}
+          </div>
+        </div>
+
+        {selectedPromotion && (
+          <div className="z-10 grid grid-cols-4 gap-2 bg-gray-900 p-2 mt-2 rounded max-h-96 overflow-y-auto w-full shadow-lg">
+            {promotions?.map((promo) => (
+              <div
+                key={promo?._id}
+                onClick={() => handleSelect("promotion", promo)} // Handle promotion selection
+                className={`cursor-pointer hover:scale-105 transition ${
+                  formData.promotion?._id === promo?._id
+                    ? "ring-2 ring-green-500"
+                    : ""
+                }`}
+              >
+                <img
+                  src={`${import.meta.env.VITE_BASE_API_URL}${promo?.image}`}
+                  alt={promo?.title}
+                  className="rounded h-14"
+                  title={promo?.title}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Selected Promotion Display */}
+      {formData.promotion && (
+        <div className="mt-4 bg-green-700 rounded text-white flex items-center gap-2">
+          <div className="w-2/5 md:w-2/3 p-2">
+            <img
+              src={`${import.meta.env.VITE_BASE_API_URL}${
+                formData.promotion?.image
+              }`}
+              alt={formData.promotion?.title}
+              className="h-24 md:h-32"
+            />
+          </div>
+          <div className="w-3/5 md:w-1/3 p-2">
+            <p className="text-sm">প্রোমশন</p>
+            <h3 className="text-lg font-bold">{formData.promotion?.title}</h3>
+            <p className="text-xs mt-1">🕒 {formData.promotion?.createdAt}</p>
+            <button
+              className="mt-2 text-xs underline text-white"
+              onClick={() => handleDeposit(formData.promotion)}
+            >
+              বিস্তারিত
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Payment Method */}
       <div className="space-y-2">
         <p className="text-sm">ডিপোজিট পদ্ধতি</p>
@@ -244,10 +345,16 @@ const DepositTab = () => {
               <div key={inputIndex} className="flex flex-col gap-2 mb-3">
                 <input
                   type={inputField.type}
-                  name={`${gateway._id}_${inputField.name}`} // ইউনিক নাম
+                  name={`${inputField.name}`}
                   placeholder={inputField.label}
                   required={inputField.isRequired === "required"}
                   className="w-full px-4 py-2 border border-[#989898] bg-transparent rounded text-white placeholder-gray-400"
+                  onChange={(e) =>
+                    setDynamicInputs((prev) => ({
+                      ...prev,
+                      [e.target.name]: e.target.value,
+                    }))
+                  }
                 />
               </div>
             ))}

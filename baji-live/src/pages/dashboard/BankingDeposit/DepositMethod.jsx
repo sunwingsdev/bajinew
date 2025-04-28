@@ -61,30 +61,28 @@ const DepositMethod = () => {
     }
   };
 
-  const handleUpdateStatus = async (gateway) => {
-    let { _id, status } = gateway;
-    if (status === "active") status = "deactive";
-    else status = "active";
+  const handleUpdateStatus = async (id, newStatus) => {
     const statusInfo = {
-      id: _id,
+      id,
       data: {
-        status: status,
+        status: newStatus,
       },
     };
+
     const result = await updateStatus(statusInfo);
     if (result.error) {
-      addToast(result.error.data.error, {
+      addToast(result.error.data.error || "Something went wrong", {
         appearance: "error",
         autoDismiss: true,
       });
-    }
-    if (result.data.modifiedCount > 0) {
+    } else if (result.data.modifiedCount > 0) {
       addToast("Status updated successfully.", {
         appearance: "success",
         autoDismiss: true,
       });
     }
   };
+
   return (
     <>
       {!addNewMethod ? (
@@ -136,10 +134,7 @@ const DepositMethod = () => {
                       <span className="ps-2">{gateway?.method}</span>
                     </td>
                     <td className="py-1 px-4">
-                      <div
-                        onClick={() => handleUpdateStatus(gateway)}
-                        className="flex items-center hover:cursor-pointer"
-                      >
+                      <div className="flex items-center">
                         <span
                           className={`h-2 w-2 ${
                             gateway?.status === "active"
@@ -147,17 +142,23 @@ const DepositMethod = () => {
                               : "bg-red-500"
                           } rounded-full mr-2`}
                         />
-                        <span
-                          className={` ${
+                        <select
+                          value={gateway?.status}
+                          onChange={(e) =>
+                            handleUpdateStatus(gateway._id, e.target.value)
+                          }
+                          className={`text-sm capitalize border rounded px-2 py-1 focus:outline-none ${
                             gateway?.status === "active"
-                              ? "text-green-700"
-                              : "text-red-700"
-                          } text-sm capitalize`}
+                              ? "text-green-700 border-green-500"
+                              : "text-red-700 border-red-500"
+                          }`}
                         >
-                          {gateway?.status || ""}
-                        </span>
+                          <option value="active">Active</option>
+                          <option value="inactive">Inactive</option>
+                        </select>
                       </div>
                     </td>
+
                     <td className="py-1 px-4 mx-auto">
                       <div className="flex items-center justify-center">
                         {isLoading ? (
@@ -167,7 +168,9 @@ const DepositMethod = () => {
                             <Link
                               to={`/dashboard/edit-depositmethod/${gateway?._id}`}
                               className={`${
-                                gateway?.status === "active" ? "" : "invisible"
+                                gateway?.status === "inactive"
+                                  ? ""
+                                  : "invisible"
                               }`}
                             >
                               <AiOutlineEdit

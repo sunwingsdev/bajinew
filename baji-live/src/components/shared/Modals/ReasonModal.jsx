@@ -28,9 +28,9 @@ const ReasonModal = ({ isOpen, onClose, onSubmit, status }) => {
           </button>
           <button
             onClick={handleSubmit}
-            className="bg-blue-500 text-white py-2 px-4 rounded"
+            className="bg-red-500 text-white py-2 px-4 rounded"
           >
-            Submit
+            Reject
           </button>
         </div>
       </div>

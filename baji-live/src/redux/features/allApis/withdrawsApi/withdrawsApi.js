@@ -18,11 +18,18 @@ const withdrawsApi = baseApi.injectEndpoints({
       providesTags: ["withdraws"],
     }),
 
+    // get withdraws by userId
+    getWithdrawsByUser: builder.query({
+      query: (userId) => `/withdraws/user/${userId}`,
+      providesTags: ["withdraws"],
+    }),
+
     // update status
     updateWithdrawStatus: builder.mutation({
-      query: (id) => ({
+      query: ({ id, data }) => ({
         url: `/withdraws/status/${id}`,
         method: "PATCH",
+        body: data,
       }),
       invalidatesTags: ["withdraws"],
     }),
@@ -32,5 +39,6 @@ const withdrawsApi = baseApi.injectEndpoints({
 export const {
   useAddWithdrawMutation,
   useGetWithdrawsQuery,
+  useGetWithdrawsByUserQuery,
   useUpdateWithdrawStatusMutation,
 } = withdrawsApi;

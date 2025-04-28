@@ -23,6 +23,7 @@ const SubCategories = () => {
   const [loading, setLoading] = useState(false);
   const { data: allCategories } = useGetAllCategoriesQuery();
   const { data: allSubCategories } = useGetAllSubCategoriesQuery();
+  console.log(allSubCategories);
 
   const [uploadImage] = useUploadImageMutation();
   const [addSubCategory] = useAddSubCategoryMutation();
@@ -106,11 +107,15 @@ const SubCategories = () => {
       if (result.isConfirmed) {
         try {
           const res = await deleteSubCategory(id);
-          if (res?.data?.deletedCount > 0) {
-            addToast("Sub Category deleted successfully", {
-              appearance: "success",
-              autoDismiss: true,
-            });
+
+          if (res?.data?.deletedSubCategory?.deletedCount > 0) {
+            addToast(
+              "Sub Category and its games has been deleted successfully",
+              {
+                appearance: "success",
+                autoDismiss: true,
+              }
+            );
           }
         } catch (err) {
           addToast("Failed to delete sub category", {

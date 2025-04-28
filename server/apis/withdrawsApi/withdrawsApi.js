@@ -57,32 +57,61 @@ const withdrawsApi = (withdrawsCollection, usersCollection) => {
     }
   });
 
-  router.patch("/status/:id", async (req, res) => {
-    const { id } = req.params;
+  // Get all withdraws for a specific user
+  router.get("/user/:userId", async (req, res) => {
+    const { userId } = req.params;
 
     try {
-      // Find the withdraw request by its ID
+      const result = await withdrawsCollection
+        .find({ userId: userId })
+        .toArray();
+
+      res.send(result);
+    } catch (error) {
+      console.error("Error fetching user withdraws:", error);
+      res.status(500).send({ error: "Failed to fetch user withdraws" });
+    }
+  });
+
+  router.patch("/status/:id", async (req, res) => {
+    const { id } = req.params;
+    const { status, reason } = req.body;
+
+    try {
       const withdraw = await withdrawsCollection.findOne({
         _id: new ObjectId(id),
       });
 
       if (!withdraw) {
-        return res.status(404).send({ error: "Withdraw request not found" });
+        return res.status(404).send({ error: "Withdraw not found" });
       }
 
-      // Ensure the withdraw is in a pending state
       if (withdraw.status !== "pending") {
         return res
           .status(400)
-          .send({ error: "Withdraw request is not in a pending state" });
+          .send({ error: "Withdraw is not in a pending state" });
       }
 
-      // Update withdraw status to "completed"
-      const result = await withdrawsCollection.updateOne(
+      const updateFields = { status };
+      if (status === "rejected") {
+        updateFields.reason = reason;
+      }
+
+      const updateResult = await withdrawsCollection.updateOne(
         { _id: new ObjectId(id) },
-        { $set: { status: "completed" } }
+        { $set: updateFields }
       );
-      res.send(result);
+
+      // Only increase balance if rejected
+      if (status === "rejected") {
+        await usersCollection.updateOne(
+          { _id: new ObjectId(withdraw.userId) },
+          { $inc: { balance: withdraw.amount } }
+          // { $inc: { balance: -withdraw.amount } }
+        );
+      }
+
+      res.send(updateResult);
     } catch (error) {
       console.error("Error updating withdraw status:", error);
       res.status(500).send({ error: "Failed to update withdraw status" });

@@ -6,8 +6,8 @@ const HomeFooter = () => {
     <div className="bg-black ">
       <div className="bg-black text-white  px-2 overflow-x-hidden  relative">
         <h2 className="text-lg font-bold">
-          joy9 বাংলাদেশ - বাংলাদেশের শীর্ষস্থানীয় অনলাইন গেমিং এবং বেটিং
-          প্ল্যাটফর্ম
+          {import.meta.env.VITE_SITE_NAME} বাংলাদেশ - বাংলাদেশের শীর্ষস্থানীয়
+          অনলাইন গেমিং এবং বেটিং প্ল্যাটফর্ম
         </h2>
         <br />
         <p className="font-medium text-sm opacity-50">

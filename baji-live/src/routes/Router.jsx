@@ -76,6 +76,10 @@ import UserDetailsPage from "@/pages/dashboard/UserDetailsPage/UserDetailsPage "
 import AdminProfile from "@/pages/dashboard/AdminProfile/AdminProfile";
 import EditDepositMethodForm from "@/components/dashboard/bankingDeposit/depositMethod/EditDepositMethodForm";
 import PromotionOffer from "@/pages/dashboard/PromotionOffer/PromotionOffer";
+import ManagePages from "@/pages/dashboard/ManagePages/ManagePages";
+import Pages from "@/pages/pages-on-footer/Pages";
+import WithdrawMethod from "@/pages/dashboard/BankingWithdraw/WithdrawMethod";
+import EditWithdrawMethodForm from "@/components/dashboard/bankingWithdraw/withdrawMethod/EditWithdrawMethodForm";
 
 const router = createBrowserRouter([
   {
@@ -203,11 +207,20 @@ const router = createBrowserRouter([
       { path: "depositmethod", element: <DepositMethod /> },
       { path: "edit-depositmethod/:id", element: <EditDepositMethodForm /> },
       { path: "deposithistory", element: <DepositHistory /> },
+      { path: "withdrawmethod", element: <WithdrawMethod /> },
+      { path: "edit-withdrawmethod/:id", element: <EditWithdrawMethodForm /> },
       { path: "withdraws", element: <WithdrawHistory /> },
       { path: "commissionsetting", element: <CommissionSetting /> },
       { path: "promotion-offer", element: <PromotionOffer /> },
+      { path: "manage-pages", element: <ManagePages /> },
     ],
   },
+
+  {
+    path: "/pages/:route",
+    element: <Pages />,
+  },
+
   {
     path: "/checkout",
     element: <Checkout />,
@@ -220,10 +233,12 @@ const router = createBrowserRouter([
     path: "/admin",
     element: <AdminLogin />,
   },
+
   {
     path: "/becomeanagent",
     element: <BecomeAnAgent />,
   },
+
   {
     path: "/cashagent",
     element: (
@@ -237,6 +252,7 @@ const router = createBrowserRouter([
       { path: "profile/:id", element: <CashAgentProfile /> },
     ],
   },
+
   {
     path: "/affiliate",
     element: <BecomeAnAffiliate />,
@@ -263,14 +279,17 @@ const router = createBrowserRouter([
       },
     ],
   },
+
   {
     path: "/affiliate/login",
     element: <AffiliateLogin />,
   },
+
   {
     path: "/affiliate/signup",
     element: <AffiliateSignUp />,
   },
+
   {
     path: "/affiliatesdashboard",
     element: (

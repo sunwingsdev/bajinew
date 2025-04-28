@@ -215,7 +215,7 @@ const AddDepositMethodForm = () => {
         >
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-semibold text-gray-800">
-              Add Manual Gateway
+              Add Manual Gateway / Deposit
             </h1>
           </div>
 

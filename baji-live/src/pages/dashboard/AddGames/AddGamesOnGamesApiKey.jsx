@@ -29,6 +29,7 @@ const AddGamesOnGamesApiKey = () => {
 
   const { data: allCategories } = useGetAllCategoriesQuery();
   const { data: allHomeGames } = useGetAllHomeGamesQuery();
+  console.log(allHomeGames);
   const { data: allSubCategories } = useGetAllSubCategoriesQuery();
   const [updateHomeGame] = useUpdateHomeGameMutation();
   const [deleteHomeGame] = useDeleteHomeGameMutation();

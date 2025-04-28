@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 const WalletSection = () => {
   const { singleUser, user } = useSelector((state) => state.auth);
+
   const [getSingleUser] = useLazyGetUserByIdQuery();
   const dispatch = useDispatch();
 
@@ -17,7 +18,7 @@ const WalletSection = () => {
   // Fetch user balance on component mount
   useEffect(() => {
     if (!user) return;
-    getSingleUser(user?.user?._id).then(({ data }) => {
+    getSingleUser(user?._id).then(({ data }) => {
       dispatch(setSingleUser(data)); // Save singleUser to Redux
     });
   }, [user]);
@@ -27,7 +28,7 @@ const WalletSection = () => {
 
     setLoading(true); // Set loading state to true
 
-    getSingleUser(user?.user?._id)
+    getSingleUser(user?._id)
       .then(({ data }) => {
         dispatch(setSingleUser(data)); // Update Redux store with the latest balance
       })
@@ -46,7 +47,7 @@ const WalletSection = () => {
             {loading ? (
               <span className="animate-spin text-white">
                 <SpinLoader />
-              </span> 
+              </span>
             ) : (
               <IoReload />
             )}

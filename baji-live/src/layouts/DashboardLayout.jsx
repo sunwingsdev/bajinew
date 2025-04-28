@@ -110,10 +110,10 @@ const DashboardLayout = () => {
       submenu: [
         { label: "Home control", to: "/dashboard/home-controls" },
         { label: "Promotions", to: "/dashboard/promotion-offer" },
-        { label: "Pages" },
-        { label: "Notice", to: "/dashboard/notice" },
-        { label: "About Us" },
-        { label: "FQA" },
+        { label: "Pages", to: "/dashboard/manage-pages" },
+        // { label: "Notice", to: "/dashboard/notice" },
+        // { label: "About Us" },
+        // { label: "FQA" },
         { label: "Sponsorship", to: "/dashboard/sponsorship" },
         { label: "Brand Abmassador" },
       ],
@@ -130,7 +130,7 @@ const DashboardLayout = () => {
       label: "Banking Withdrow",
       icon: <BsBank />,
       submenu: [
-        { label: "Withdrow Methord" },
+        { label: "Withdrow Methord", to: "/dashboard/withdrawmethod" },
         { label: "withdrow History", to: "/dashboard/withdraws" },
       ],
     },

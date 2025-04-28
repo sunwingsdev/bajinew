@@ -46,30 +46,39 @@ const FooterLast = () => {
         <div className="text-white text-xs">
           <h2 className="text-green">উইন লাইক এ কিং</h2>
           <p className="opacity-50 text-[10px]">
-            © 2025 joy9 কপিরাইট। সমস্ত অধিকার সংরক্ষিত
+            © 2025 {import.meta.env.VITE_SITE_NAME} কপিরাইট। সমস্ত অধিকার
+            সংরক্ষিত
           </p>
         </div>
       </div>
 
       <div className="text-white text-opacity-50 text-xs   gap-x-3 py-4 border-t border-white border-opacity-50">
         <p>
-          <Link className="text-green">joy9.com</Link>BJ88 হোল্ডিংস লিমিটেডের
-          মালিকানাধীন এবং এর আওতায় পরিচালিত। রেজিস্ট্রেশন নম্বর: ১৫৮৩৯, নিবন্ধিত
-          ঠিকানা: হামছাকো, মুতসামুদু, আনজোয়ানের স্বায়ত্তশাসিত দ্বীপ, কমোরোস
-          ইউনিয়ন। আমাদের সাথে যোগাযোগের ঠিকানা
+          <Link className="text-green">
+            {import.meta.env.VITE_SITE_NAME}.com
+          </Link>
+          BJ88 হোল্ডিংস লিমিটেডের মালিকানাধীন এবং এর আওতায় পরিচালিত।
+          রেজিস্ট্রেশন নম্বর: ১৫৮৩৯, নিবন্ধিত ঠিকানা: হামছাকো, মুতসামুদু,
+          আনজোয়ানের স্বায়ত্তশাসিত দ্বীপ, কমোরোস ইউনিয়ন। আমাদের সাথে যোগাযোগের
+          ঠিকানা
         </p>
 
         <p>
           <Link className="text-green">bj88holdingslimited@gmail.com</Link> |{" "}
-          <Link className="text-green">joy9.com</Link> কমোরোস ইউনিয়নের আনজুয়ান
-          স্বায়ত্তশাসিত দ্বীপ সরকার দ্বারা লাইসেন্সপ্রাপ্ত এবং নিয়ন্ত্রিত এবং
-          লাইসেন্স নং ALSI-202410030-FI1 এর অধীনে কাজ করে।
+          <Link className="text-green">
+            {import.meta.env.VITE_SITE_NAME}.com
+          </Link>{" "}
+          কমোরোস ইউনিয়নের আনজুয়ান স্বায়ত্তশাসিত দ্বীপ সরকার দ্বারা
+          লাইসেন্সপ্রাপ্ত এবং নিয়ন্ত্রিত এবং লাইসেন্স নং ALSI-202410030-FI1 এর
+          অধীনে কাজ করে।
         </p>
 
         <p>
-          <Link className="text-green">joy9.com</Link> সমস্ত আইনগত অনুমোদন ও
-          শর্ত পূর্ণ করেছে এবং যেকোনো ধরণের গেম অফ চান্স এবং বেট পরিচালনার জন্য
-          বৈধভাবে অনুমোদিত।
+          <Link className="text-green">
+            {import.meta.env.VITE_SITE_NAME}.com
+          </Link>{" "}
+          সমস্ত আইনগত অনুমোদন ও শর্ত পূর্ণ করেছে এবং যেকোনো ধরণের গেম অফ চান্স
+          এবং বেট পরিচালনার জন্য বৈধভাবে অনুমোদিত।
         </p>
       </div>
     </div>

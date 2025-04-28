@@ -34,7 +34,7 @@ const categoryApi = baseApi.injectEndpoints({
         url: `/categories/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["category"],
+      invalidatesTags: ["category", "subcategory", "homeGame"],
     }),
   }),
 });
